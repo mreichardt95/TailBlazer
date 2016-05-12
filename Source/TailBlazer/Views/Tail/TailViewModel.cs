@@ -19,7 +19,6 @@ using TailBlazer.Domain.Settings;
 using TailBlazer.Domain.StateHandling;
 using TailBlazer.Infrastucture;
 using TailBlazer.Infrastucture.Virtualisation;
-using TailBlazer.Views.Options;
 using TailBlazer.Views.Searching;
 
 namespace TailBlazer.Views.Tail
@@ -39,10 +38,8 @@ namespace TailBlazer.Views.Tail
         private LineProxy _selectedLine;
         private bool _showInline;
 
-        private ICommand _keyAutoTail;
-
         public ReadOnlyObservableCollection<LineProxy> Lines => _data;
-        public Guid Id { get; }= Guid.NewGuid();
+        public Guid Id { get; } = Guid.NewGuid();
         public ISelectionMonitor SelectionMonitor { get; }
         private SearchOptionsViewModel SearchOptions { get;  }
         public SearchHints SearchHints { get;  }
@@ -59,14 +56,15 @@ namespace TailBlazer.Views.Tail
         public IProperty<bool> HighlightTail { get; }
         public IProperty<bool> UsingDarkTheme { get; }
         public IProperty<int> MaximumChars { get; }
+
         public ICommand CopyToClipboardCommand { get; }
         public ICommand OpenFileCommand { get; }
         public ICommand OpenFolderCommand { get; }
         public ICommand CopyPathToClipboardCommand { get; }
-        public ICommand KeyAutoTail { get; }
         public ICommand OpenSearchOptionsCommand => new Command(OpenSearchOptions);
-
-
+        public ICommand ClearCommand { get; }
+        public ICommand UnClearCommand { get; }
+        public ICommand KeyAutoTail { get; }
         public string Name { get; }
 
         public TailViewModel([NotNull] ILogger logger,
@@ -104,20 +102,21 @@ namespace TailBlazer.Views.Tail
             SelectionMonitor = selectionMonitor;
             SearchOptions = searchOptionsViewModel;
             SearchHints = searchHints;
-            SearchCollection = new SearchCollection(searchInfoCollection, schedulerProvider);
+
             CopyToClipboardCommand = new Command(() => clipboardHandler.WriteToClipboard(selectionMonitor.GetSelectedText()));
             OpenFileCommand = new Command(() => Process.Start(fileWatcher.FullName));
             OpenFolderCommand = new Command(() => Process.Start(fileWatcher.Folder));
             CopyPathToClipboardCommand = new Command(() => clipboardHandler.WriteToClipboard(fileWatcher.FullName));
-            KeyAutoTail  = new Command(() => { AutoTail = true; });
+            UnClearCommand = new Command(fileWatcher.Reset);
+            ClearCommand = new Command(fileWatcher.Clear);
+            KeyAutoTail = new Command(() => { AutoTail = true; });
+
+            SearchCollection = new SearchCollection(searchInfoCollection, schedulerProvider);
             SearchMetadataCollection = searchMetadataCollection;
             
             var horizonalScrollArgs = new ReplaySubject<TextScrollInfo>(1);
-            HorizonalScrollChanged = args =>
-            {
-                horizonalScrollArgs.OnNext(args);
-            };
-
+            HorizonalScrollChanged = args => horizonalScrollArgs.OnNext(args);
+            
             _tailViewStateControllerFactory = tailViewStateControllerFactory;
             
             //Move these 2 highlight fields to a service as all views require them
@@ -147,10 +146,7 @@ namespace TailBlazer.Views.Tail
             FileStatus = fileWatcher.Status.ForBinding();
 
             //command to add the current search to the tail collection
-            var searchInvoker = SearchHints.SearchRequested.Subscribe(request =>
-            {
-                searchInfoCollection.Add(request.Text, request.UseRegEx);
-            });
+            var searchInvoker = SearchHints.SearchRequested.Subscribe(request => searchInfoCollection.Add(request.Text, request.UseRegEx));
 
             //User feedback to show file size
             FileSizeText = fileWatcher.Latest.Select(fn=>fn.Size)
@@ -159,7 +155,9 @@ namespace TailBlazer.Views.Tail
                 .ForBinding();
 
             //tailer is the main object used to tail, scroll and filter in a file
-            var lineScroller = new LineScroller(SearchCollection.Latest.ObserveOn(schedulerProvider.Background), scroller);
+            var selectedProvider = SearchCollection.Latest.ObserveOn(schedulerProvider.Background);
+            
+            var lineScroller = new LineScroller(selectedProvider, scroller);
             
             MaximumChars = lineScroller.MaximumLines()
                             .ObserveOn(schedulerProvider.MainThread)
@@ -196,7 +194,6 @@ namespace TailBlazer.Views.Tail
                     FirstIndex = first;
                 });
 
-
             //Create objects required for inline viewing
             var isUserDefinedChanged = SearchCollection.WhenValueChanged(sc => sc.Selected)
                 .Where(selected=> selected!=null)
@@ -204,9 +201,9 @@ namespace TailBlazer.Views.Tail
                 .DistinctUntilChanged()
                 .Replay(1)
                 .RefCount();
-            
-            var inlineViewerVisible = isUserDefinedChanged.CombineLatest(this.WhenValueChanged(vm => vm.ShowInline),
-                                                            (userDefined, showInline) => userDefined && showInline);
+
+            var showInline = this.WhenValueChanged(vm => vm.ShowInline);
+            var inlineViewerVisible = isUserDefinedChanged.CombineLatest(showInline, (userDefined, showInlne) => userDefined && showInlne);
             
             CanViewInline = isUserDefinedChanged.ForBinding();
             InlineViewerVisible = inlineViewerVisible.ForBinding();
@@ -240,15 +237,14 @@ namespace TailBlazer.Views.Tail
                 horizonalScrollArgs.SetAsComplete(),
                 _userScrollRequested.SetAsComplete());
         }
-
      
         public TextScrollDelegate HorizonalScrollChanged { get; }
-
-
+        
         private async void OpenSearchOptions()
         {
            await DialogHost.Show(SearchOptions, Id);
         }
+
         public LineProxy SelectedItem
         {
             get { return _selectedLine; }
@@ -280,7 +276,7 @@ namespace TailBlazer.Views.Tail
         }
 
         #region Interact with scroll panel
-        
+
         void IScrollReceiver.ScrollBoundsChanged(ScrollBoundsArgs boundsArgs)
         {
             if (boundsArgs == null) throw new ArgumentNullException(nameof(boundsArgs));
@@ -318,7 +314,6 @@ namespace TailBlazer.Views.Tail
             //this controller responsible for loading and persisting user search stuff as the user changes stuff
             _stateMonitor.Disposable = _tailViewStateControllerFactory.Create(this,true);
         }
-
 
         ViewState IPersistentView.CaptureState()
         {

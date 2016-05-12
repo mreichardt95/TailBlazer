@@ -31,12 +31,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="DynamicData, Version=4.6.0.1134, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DynamicData.4.6.0.1134-beta\lib\net45\DynamicData.dll</HintPath>
+    <Reference Include="DynamicData, Version=4.7.1.1153, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\DynamicData.4.7.1.1153\lib\net45\DynamicData.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="DynamicData.Plinq, Version=4.6.0.1134, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\DynamicData.Plinq.4.6.0.1134-beta\lib\net45\DynamicData.Plinq.dll</HintPath>
+    <Reference Include="DynamicData.Plinq, Version=4.7.1.1153, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\DynamicData.Plinq.4.7.1.1153\lib\net45\DynamicData.Plinq.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="PresentationCore" />
@@ -67,6 +67,7 @@
     <Compile Include="CaseInsensitiveString.cs" />
     <Compile Include="FileHandling\EmptyLineProvider.cs" />
     <Compile Include="FileHandling\FileInfoEx.cs" />
+    <Compile Include="FileHandling\FileRewriter.cs" />
     <Compile Include="FileHandling\FileSearcher.cs" />
     <Compile Include="FileHandling\FileSearchEx.cs" />
     <Compile Include="FileHandling\FileSearchResult.cs" />
@@ -81,6 +82,7 @@
     <Compile Include="FileHandling\FileSegmentSearch.cs" />
     <Compile Include="FileHandling\FileSegmentSearchStatus.cs" />
     <Compile Include="FileHandling\FileSegmentType.cs" />
+    <Compile Include="FileHandling\FileStatus.cs" />
     <Compile Include="FileHandling\FileWatcher.cs" />
     <Compile Include="FileHandling\IFileWatcher.cs" />
     <Compile Include="FileHandling\IHasLimitationOfLines.cs" />
@@ -88,6 +90,7 @@
     <Compile Include="FileHandling\ILineScroller.cs" />
     <Compile Include="FileHandling\IndexEx.cs" />
     <Compile Include="FileHandling\IndexType.cs" />
+    <Compile Include="FileHandling\IProgressInfo.cs" />
     <Compile Include="FileHandling\LineKey.cs" />
     <Compile Include="FileHandling\Search\IDefaultColourSelector.cs" />
     <Compile Include="FileHandling\Search\IconTypeSelector.cs" />
@@ -119,7 +122,6 @@
     <Compile Include="FileHandling\Search\SearchMetadataFactory.cs" />
     <Compile Include="FileHandling\Search\SearchType.cs" />
     <Compile Include="FileHandling\StartFromEx.cs" />
-    <Compile Include="FileHandling\StartFromLineProvider.cs" />
     <Compile Include="FileHandling\StreamReaderExtended.cs" />
     <Compile Include="FileHandling\Search\SearchInfoCollection.cs" />
     <Compile Include="FileHandling\Search\SearchInfo.cs" />

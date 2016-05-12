@@ -35,7 +35,7 @@
                 <ResourceDictionary Source="pack://application:,,,/TailBlazer;component/Themes/Buttons.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/TailBlazer;component/Themes/ToggleButtons.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/TailBlazer;component/Themes/TextBoxes.xaml" />
-                <ResourceDictionary Source="pack://application:,,,/TailBlazer;component/Themes/ComboBox.xaml" />
+                <!--<ResourceDictionary Source="pack://application:,,,/TailBlazer;component/Themes/ComboBox.xaml" />-->
                 <ResourceDictionary Source="pack://application:,,,/TailBlazer;component/Themes/Lines.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
@@ -97,6 +97,12 @@
         </ResourceDictionary>
     </Control.Resources>
 
+    <UserControl.CommandBindings>
+        <CommandBinding Command="ApplicationCommands.Find"
+                        Executed="ApplicationCommandFind_Executed"
+                        />
+    </UserControl.CommandBindings>
+    
     <wpf:DialogHost Identifier="{Binding Id}"
                                  TextElement.Foreground="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}, Path=(TextElement.Foreground)}"
                 Background="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType=Window}, Path=Background}"
@@ -178,7 +184,7 @@
                             TabIndex="0"
                              x:Name="SearchTextBox"
                             Text="{Binding SearchHints.SearchText, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True}"
-                            wpf:TextFieldAssist.Hint="{Binding SearchHints.Message.Value}" 
+                            wpf:HintAssist.Hint="{Binding SearchHints.Message.Value}" 
                             VerticalAlignment="Bottom"
                             wpf:ValidationAssist.UsePopup="False"
                             Style="{StaticResource FloatingHintAndErrorTextBox}"
@@ -349,16 +355,30 @@
 
                     <ListBox.ContextMenu>
                         <ContextMenu>
-                            <MenuItem Header="_Copy" Command="{Binding CopyToClipboardCommand}">
-                                <MenuItem.Icon>
-                                    <Viewbox Width="16" Height="16">
-                                        <Canvas Width="24" Height="24">
-                                            <Path Data="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z" 
+                            <ContextMenu.Items>
+                                <MenuItem Header="_Copy" Command="{Binding CopyToClipboardCommand}">
+                                    <MenuItem.Icon>
+                                        <Viewbox Width="16" Height="16">
+                                            <Canvas Width="24" Height="24">
+                                                <Path Data="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z" 
                                               Fill="{DynamicResource MaterialDesignBody}" />
-                                        </Canvas>
-                                    </Viewbox>
-                                </MenuItem.Icon>
-                            </MenuItem>
+                                            </Canvas>
+                                        </Viewbox>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                
+                                <MenuItem Header="Clear" Command="{Binding ClearCommand}">
+                                        <MenuItem.Icon>
+                                        <wpf:PackIcon Kind="Eraser" Width="16" Height="16"/>
+                                    </MenuItem.Icon>
+                                </MenuItem>
+                                <MenuItem Header="Un-Clear" Command="{Binding UnClearCommand}">
+                                    <MenuItem.Icon>
+                                        <wpf:PackIcon Kind="Undo" Width="16" Height="16"/>
+                                    </MenuItem.Icon>
+                                </MenuItem> 
+                            </ContextMenu.Items>
+
                         </ContextMenu>
                     </ListBox.ContextMenu>
                 </ListBox>
@@ -475,6 +495,20 @@
 
                         </wpf:PopupBox>
 
+
+                        <Border 
+                            Margin="4 2 2 0"
+                            Opacity="0.56"
+                            BorderThickness="1 0 0 0" BorderBrush="White"/>
+                        
+                        <TextBlock  
+                            Margin="4 0 0 0"
+                            Text="{Binding  CountText.Value, StringFormat='\{0}.'}"
+                            VerticalAlignment="Center"/>
+
+
+                        <TextBlock Margin="6 0 0 0" Text="{Binding FileSizeText.Value}" />
+
                     </StackPanel>
 
                     <StackPanel 
@@ -482,13 +516,31 @@
                     Grid.Column="2"
                             HorizontalAlignment="Right"
                             Orientation="Horizontal">
-                        <TextBlock  
-                        Margin="4 0 0 0"
-                        Text="{Binding  CountText.Value, StringFormat='\{0}.'}"
-                        VerticalAlignment="Center"/>
+
+                        <Button Width="22" Height="22"
+                                Margin="4 0 0 0" 
+                                Padding="0"
+                                Foreground="White"
+                                Opacity="0.76"
+                                ToolTip="Un-clear to monitor entire file"
+                                Style="{StaticResource MaterialDesignFlatButton}" 
+                                Command="{Binding UnClearCommand}">
+                            <wpf:PackIcon Kind="Undo" Width="16" Height="16"/>
+                        </Button>
+                        
+                        <Button  Width="22" Height="22"
+                                 Margin="4 0 0 0" 
+                                 Padding="0"
+                                 Opacity="0.76"
+                                 ToolTip="Clear to monitor tail only"
+                                 Foreground="White"
+                                Style="{StaticResource MaterialDesignFlatButton}" 
+                                Command="{Binding ClearCommand}">
+                            <wpf:PackIcon Kind="Eraser" Width="16" Height="16"/>
+                        </Button>
 
 
-                        <TextBlock Margin="6 0 0 0" Text="{Binding FileSizeText.Value}" />
+
                     </StackPanel>
                 </Grid>
             </Grid>

@@ -4,17 +4,9 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using DynamicData.Kernel;
-using TailBlazer.Domain.FileHandling.Search;
 
 namespace TailBlazer.Domain.FileHandling
 {
-    public interface IProgressInfo
-    {
-        int SegmentsCompleted { get; }
-        int Segments { get; }
-        bool IsSearching { get; }
-    }
-
     public class FileSearchResult: ILineProvider, IEquatable<FileSearchResult>, IHasLimitationOfLines, IProgressInfo
     {
         public static readonly FileSearchResult None = new FileSearchResult();
@@ -107,8 +99,6 @@ namespace TailBlazer.Domain.FileHandling
 
         public IEnumerable<Line> ReadLines(ScrollRequest scroll)
         {
-
-
             var page = GetPage(scroll);
 
             if (page.Size == 0) yield break;

@@ -52,13 +52,15 @@ namespace TailBlazer.Domain.FileHandling
            
             //1. Get information from segment info
             var infoSubscriber = shared.Select(segments => segments.Info)
-                .Take(1)
                 .Subscribe(info =>
                 {
                     Info = info;
-                    Encoding = encoding ?? info.GetEncoding();
+
+                    if (Encoding == null || info.Name != Info.Name)
+                        Encoding = encoding ?? info.GetEncoding();
                 });
-           
+
+
             //2. create  a resulting index object from the collection of index fragments
             Result = _indicies
                 .Connect()
@@ -69,7 +71,8 @@ namespace TailBlazer.Domain.FileHandling
 
 
             //3. Scan the tail so results can be returned quickly
-            var tailScanner= shared.Select(segments => segments.Tail).DistinctUntilChanged()
+            var tailScanner= shared.Select(segments => segments.Tail)
+                .DistinctUntilChanged()
                 .Scan((Index)null, (previous, current) =>
                {
                     if (previous == null)
@@ -120,9 +123,8 @@ namespace TailBlazer.Domain.FileHandling
                             });
                         });
                 });
-
-
-            _cleanUp = new CompositeDisposable(infoSubscriber,_indicies, tailSubscriber, tailSubscriber, headSubscriber);
+            
+            _cleanUp = new CompositeDisposable(infoSubscriber, _indicies, tailSubscriber, tailSubscriber, headSubscriber);
         }
 
         private int EstimateNumberOfLines(Index tail, FileInfo info)
@@ -194,9 +196,7 @@ namespace TailBlazer.Domain.FileHandling
                 {
                     yield return selector(position);
                     i = 0;
-                };
-
-
+                }
             }
         }
 
