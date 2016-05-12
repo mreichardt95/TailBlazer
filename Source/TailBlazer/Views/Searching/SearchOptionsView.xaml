@@ -211,7 +211,7 @@
                     Content="Close"     
                     Command="{x:Static wpf:DialogHost.CloseDialogCommand}"/>
                 <CheckBox Grid.Row="3"
-                      IsChecked="{Binding SearchHints.GlobalErrorHighlightingIsChecked}"
+                      IsChecked="{Binding SearchHints.GlobalErrorHighlightingIsChecked,Mode=OneWay}"
                       Command="{Binding SearchHints.GlobalErrorHighlighting}"
                       Margin="0 6 6 6" 
                       HorizontalAlignment="Left"
