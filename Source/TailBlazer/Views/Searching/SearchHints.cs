@@ -27,11 +27,16 @@ namespace TailBlazer.Views.Searching
 
         public ICommand AddSearchCommand { get; }
 
+        public ICommand GlobalErrorHighlighting { get; }
+
         public IObservable<SearchRequest> SearchRequested { get; }
 
         public IProperty<bool> IsValid { get; }
 
         public IProperty<string> Message { get; }
+
+        public bool GlobalErrorHighlightingIsChecked { get; }
+
 
 
         public SearchHints(IRecentSearchCollection recentSearchCollection, ISchedulerProvider schedulerProvider)
@@ -81,6 +86,19 @@ namespace TailBlazer.Views.Searching
                 .Bind(out _hints)
                 .Subscribe();
 
+            GlobalErrorHighlighting = new Command(() =>
+            {
+                if (!GlobalErrorHighlightingIsChecked)
+                {
+                    searchRequested.OnNext(new SearchRequest("Error", false));
+                    SearchText = string.Empty;
+                }
+                else
+                {
+
+                }
+            });
+
             _cleanUp = new CompositeDisposable( IsValid,Message, predictRegex, dataLoader, searchRequested.SetAsComplete(), combined.Connect());
         }
         
@@ -105,7 +123,7 @@ namespace TailBlazer.Views.Searching
         }
 
         #region Data error 
-        
+
         string IDataErrorInfo.this[string columnName] => IsValid.Value ? null : Message.Value;
 
         string IDataErrorInfo.Error => null;

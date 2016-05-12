@@ -202,12 +202,27 @@
                 </dragablz:DragablzItemsControl.ItemsOrganiser>
             </dragablz:DragablzItemsControl>
 
-            <Button  Grid.Row="3" IsDefault="True"
-                 Margin="0 6 6 6"
-                HorizontalAlignment="Left"
-                Style="{DynamicResource MaterialDesignFlatButton}"
-                Content="Close"     
-                Command="{x:Static wpf:DialogHost.CloseDialogCommand}"/>
+            <WrapPanel Grid.Row="3" VerticalAlignment="Bottom">
+                <Button  Grid.Row="3" 
+                     IsDefault="True"
+                    Margin="0 6 6 6"
+                    HorizontalAlignment="Left"
+                    Style="{DynamicResource MaterialDesignFlatButton}"
+                    Content="Close"     
+                    Command="{x:Static wpf:DialogHost.CloseDialogCommand}"/>
+                <CheckBox Grid.Row="3"
+                      IsChecked="{Binding SearchHints.GlobalErrorHighlightingIsChecked}"
+                      Command="{Binding SearchHints.GlobalErrorHighlighting}"
+                      Margin="0 6 6 6" 
+                      HorizontalAlignment="Left"
+                      Content="Highlight Errors" Height="19" />
+                <CheckBox Grid.Row="3"
+                      IsChecked="False"
+                      Margin="0 6 6 6"
+                      HorizontalAlignment="Left"
+                      Content="Highlight Warnings" Height="19" />
+
+            </WrapPanel>
 
 
         </Grid>
